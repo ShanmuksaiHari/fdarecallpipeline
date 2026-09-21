@@ -1,0 +1,29 @@
+def is_allergen_recall(reason_text):
+    text = reason_text.lower()
+    if "undeclared" in text or "does not declare" in text:
+        return True
+    return False
+
+
+def is_pathogen_recall(reason_text):
+    text = reason_text.lower()
+    if "salmonella" in text or "listeria" in text or "botulinum" in text:
+        return True
+    return False
+
+
+def is_foreign_material_recall(reason_text):
+    text = reason_text.lower()
+    if "foreign object" in text or "foreign material" in text or "metal" in text:
+        return True
+    return False
+
+
+def categorize_hazard(reason_text):
+    if is_allergen_recall(reason_text):
+        return "allergen"
+    if is_pathogen_recall(reason_text):
+        return "pathogen"
+    if is_foreign_material_recall(reason_text):
+        return "foreign_material"
+    return "other"
