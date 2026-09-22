@@ -12,9 +12,14 @@ BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
 s3 = boto3.client("s3")
 
 
-def upload_to_bronze(records, meta):
+def upload_to_bronze(records, meta, key_label=None):
     now = datetime.now(timezone.utc)
-    key = now.strftime("bronze/food/%Y/%m/%d/recalls_%H%M.json")
+
+    if key_label is None:
+        key_label = now.strftime("%H%M")
+
+    date_path = now.strftime("bronze/food/%Y/%m/%d")
+    key = f"{date_path}/recalls_{key_label}.json"
 
     body = {
         "meta": meta,
