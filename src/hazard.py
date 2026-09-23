@@ -1,20 +1,21 @@
 def is_allergen_recall(reason_text):
     text = reason_text.lower()
-    if "undeclared" in text or "does not declare" in text:
+    if "undeclared" in text or "does not declare" in text or "not declared" in text:
         return True
     return False
 
 
 def is_pathogen_recall(reason_text):
     text = reason_text.lower()
-    if "salmonella" in text or "listeria" in text or "botulinum" in text:
+    pathogens = ["salmonella", "listeria", "botulinum", "e. coli", "cyclospora", "patulin"]
+    if any(p in text for p in pathogens):
         return True
     return False
 
 
 def is_foreign_material_recall(reason_text):
     text = reason_text.lower()
-    if "foreign object" in text or "foreign material" in text or "metal" in text:
+    if "foreign object" in text or "foreign material" in text or "metal" in text or "plastic" in text or "glass" in text:
         return True
     return False
 
