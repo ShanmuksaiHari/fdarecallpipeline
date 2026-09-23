@@ -1,13 +1,13 @@
 def is_allergen_recall(reason_text):
     text = reason_text.lower()
-    if "undeclared" in text or "does not declare" in text or "not declared" in text:
+    if "undeclared" in text or "does not declare" in text or "do not declare" in text or "not declared" in text or "does not list" in text:
         return True
     return False
 
 
 def is_pathogen_recall(reason_text):
     text = reason_text.lower()
-    pathogens = ["salmonella", "listeria", "botulinum", "e. coli", "cyclospora", "patulin"]
+    pathogens = ["salmonella", "listeria", "botulinum", "e. coli", "cyclospora", "patulin", "giardia", "norovirus"]
     if any(p in text for p in pathogens):
         return True
     return False
