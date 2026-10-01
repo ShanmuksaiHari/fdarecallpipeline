@@ -18,7 +18,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install boto3 requests
+        run: pip install boto3 requests python-dotenv
 
       - name: Fetch yesterday's recalls and upload to S3
         working-directory: src
