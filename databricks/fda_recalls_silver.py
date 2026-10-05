@@ -113,17 +113,27 @@ recall_schema = StructType([
     StructField("termination_date", StringType(), True),
 ])
 
-years = range(2012, 2027)
-all_records = []
+# Read every bronze file (backfill AND daily), not a fixed list of paths.
+# Files are processed oldest-first, so if a recall shows up in more than one
+# file (e.g. a status update), the newest version wins. Keying by
+# recall_number also guarantees one row per recall, which the MERGE below needs.
+paginator = s3.get_paginator("list_objects_v2")
+keys = []
+for page in paginator.paginate(Bucket="fda-recalls-shanmuksai", Prefix="bronze/food/"):
+    for obj in page.get("Contents", []):
+        if obj["Key"].endswith(".json"):
+            keys.append(obj["Key"])
+keys.sort()
 
-for year in years:
-    key = f"bronze/food/2026/09/22/recalls_{year}_full.json"
-    obj = s3.get_object(Bucket="fda-recalls-shanmuksai", Key=key)
-    data = json.loads(obj["Body"].read())
-    all_records.extend(data["results"])
-    print(f"{year}: {len(data['results'])} records (running total {len(all_records)})")
+records_by_number = {}
+for key in keys:
+    body = json.loads(s3.get_object(Bucket="fda-recalls-shanmuksai", Key=key)["Body"].read())
+    for r in body["results"]:
+        records_by_number[r["recall_number"]] = r
+    print(f"{key}: {len(body['results'])} records")
 
-print(f"\nTotal records across all years: {len(all_records)}")
+all_records = list(records_by_number.values())
+print(f"\nTotal unique recalls: {len(all_records)}")
 
 df_all = spark.createDataFrame(all_records, schema=recall_schema)
 
