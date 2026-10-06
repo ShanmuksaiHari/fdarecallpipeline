@@ -1,7 +1,8 @@
 # Databricks notebook source
 import boto3
 
-# Credentials come from a Databricks secret scope - never hardcode keys.
+# Credentials are never committed. Create a Databricks secret scope named
+# 'fda-pipeline' holding the two AWS keys below before running this notebook.
 s3 = boto3.client(
     "s3",
     aws_access_key_id=dbutils.secrets.get(scope="fda-pipeline", key="aws_access_key_id"),
