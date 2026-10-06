@@ -42,3 +42,27 @@ def test_upload_without_bucket_fails_with_clear_error(monkeypatch):
 
     with pytest.raises(RuntimeError, match="AWS_BUCKET_NAME"):
         upload.upload_to_bronze([], {})
+
+
+def test_list_bronze_keys_collects_every_page(monkeypatch):
+    class FakePaginator:
+        def paginate(self, **kwargs):
+            assert kwargs["Prefix"] == "bronze/food/"
+            yield {"Contents": [{"Key": "bronze/food/a.json"}]}
+            yield {}  # a page with no contents
+            yield {"Contents": [{"Key": "bronze/food/b.json"}]}
+
+    class FakeS3WithPaginator:
+        def get_paginator(self, name):
+            assert name == "list_objects_v2"
+            return FakePaginator()
+
+    monkeypatch.setattr(upload, "s3", FakeS3WithPaginator())
+    monkeypatch.setattr(upload, "BUCKET_NAME", "test-bucket")
+    assert upload.list_bronze_keys() == ["bronze/food/a.json", "bronze/food/b.json"]
+
+
+def test_list_bronze_keys_without_bucket_fails(monkeypatch):
+    monkeypatch.setattr(upload, "BUCKET_NAME", None)
+    with pytest.raises(RuntimeError, match="AWS_BUCKET_NAME"):
+        upload.list_bronze_keys()

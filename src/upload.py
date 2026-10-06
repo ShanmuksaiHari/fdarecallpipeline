@@ -43,3 +43,15 @@ def upload_to_bronze(records, meta, key_label=None):
 
     print(f"Uploaded {len(records)} records to s3://{BUCKET_NAME}/{key}")
     return key
+
+
+def list_bronze_keys(prefix="bronze/food/"):
+    """Return every key already stored under the bronze prefix."""
+    if not BUCKET_NAME:
+        raise RuntimeError("AWS_BUCKET_NAME is not set - cannot list S3")
+
+    keys = []
+    paginator = s3.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=BUCKET_NAME, Prefix=prefix):
+        keys.extend(obj["Key"] for obj in page.get("Contents", []))
+    return keys

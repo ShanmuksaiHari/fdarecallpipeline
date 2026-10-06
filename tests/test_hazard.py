@@ -90,3 +90,7 @@ def test_categorize_precedence_allergen_before_pathogen():
     # so it's a known trade-off, not a silent surprise.
     text = "Undeclared milk and possible Salmonella contamination"
     assert categorize_hazard(text) == "allergen"
+
+
+def test_categorize_none_is_other():
+    assert categorize_hazard(None) == "other"

@@ -21,6 +21,8 @@ def is_foreign_material_recall(reason_text):
 
 
 def categorize_hazard(reason_text):
+    if reason_text is None:
+        return "other"
     if is_allergen_recall(reason_text):
         return "allergen"
     if is_pathogen_recall(reason_text):
