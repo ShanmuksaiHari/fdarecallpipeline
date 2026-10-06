@@ -11,7 +11,7 @@ with DAG(
     dag_id="fda_recall_pipeline",
     description="Fetch daily FDA recalls and trigger Databricks silver/gold rebuild",
     default_args=default_args,
-    schedule_interval="0 12 * * *",
+    schedule="0 12 * * *",
     start_date=datetime(2026, 10, 1),
     catchup=False,
     tags=["fda", "portfolio"],

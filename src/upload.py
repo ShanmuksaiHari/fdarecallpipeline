@@ -13,6 +13,14 @@ s3 = boto3.client("s3")
 
 
 def upload_to_bronze(records, meta, key_label=None):
+    """
+    Write a batch of raw records to S3 as one JSON file under the bronze layer.
+    Files are partitioned by ingestion date (the day this runs); the recall's
+    own report_date is kept inside each record and used later in silver.
+    """
+    if not BUCKET_NAME:
+        raise RuntimeError("AWS_BUCKET_NAME is not set - cannot upload to S3")
+
     now = datetime.now(timezone.utc)
 
     if key_label is None:

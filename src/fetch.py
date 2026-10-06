@@ -55,11 +55,12 @@ def fetch_window(start_date, end_date):
     """
     search = f"report_date:[{start_date} TO {end_date}]"
     params = {
-        "api_key": API_KEY,
         "search": search,
         "limit": PAGE_SIZE,
         "skip": 0,
     }
+    if API_KEY:  # works without a key too, just with lower rate limits
+        params["api_key"] = API_KEY
 
     response = _get_with_retry(params)
 
