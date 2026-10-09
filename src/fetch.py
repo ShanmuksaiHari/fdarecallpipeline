@@ -110,6 +110,6 @@ if __name__ == "__main__":
 
     if records:
         print(f"\nFeed last updated: {meta['last_updated']}")
-        print(f"\nFirst record fields:")
+        print("\nFirst record fields:")
         for key, value in records[0].items():
             print(f"  {key}: {value}")

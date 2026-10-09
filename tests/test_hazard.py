@@ -84,10 +84,9 @@ def test_categorize_empty_string():
 
 
 def test_categorize_precedence_allergen_before_pathogen():
-    # Known limitation: when a reason mentions both an undeclared allergen
-    # and a pathogen, allergen wins because it's checked first in
-    # categorize_hazard(). This test documents that behavior explicitly
-    # so it's a known trade-off, not a silent surprise.
+    # Known limitation: if a reason mentions both an undeclared allergen
+    # and a pathogen, it is labeled allergen because that rule runs first.
+    # This test pins that behavior so a change to it is deliberate.
     text = "Undeclared milk and possible Salmonella contamination"
     assert categorize_hazard(text) == "allergen"
 

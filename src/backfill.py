@@ -11,12 +11,13 @@ Usage:
     python backfill.py --force    # re-fetch every year
 """
 import sys
+from datetime import datetime, timezone
 
 from fetch import fetch_window
 from upload import list_bronze_keys, upload_to_bronze
 
 START_YEAR = 2004
-END_YEAR = 2026
+END_YEAR = datetime.now(timezone.utc).year
 
 
 def year_already_loaded(year, existing_keys):

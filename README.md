@@ -4,8 +4,8 @@
 
 A daily data pipeline that pulls U.S. food recall records from the openFDA API,
 stores the raw JSON in S3, cleans it into a Delta table in Databricks, builds
-six summary tables, and shows them on a Grafana dashboard. It currently holds
-29,462 recalls reported between June 2012 and September 2026.
+six summary tables, and shows them on a Grafana dashboard. As of early October
+2026 it holds 29,462 recalls reported between June 2012 and September 2026.
 
 **[Live dashboard (static snapshot)](https://sincereflax272.grafana.net/dashboard/snapshot/iYbrt9kfMA9vhEFSUQ9rW3Y1Th8k0qji)**
 
@@ -95,11 +95,12 @@ GitHub Actions runs the pipeline every day at 12:00 UTC (`daily-pipeline.yml`).
 It can also be started by hand, with an optional report date.
 
 1. `daily_fetch.py` asks openFDA for every recall reported in the last 14
-   days, with up to 3 retries on network errors and server errors.
+   days, trying each request up to 3 times on network errors and server errors.
 2. The result is uploaded to S3 as one JSON file named after the date window,
    so a new run never overwrites an old file.
-3. The workflow calls the Databricks Jobs API to run the notebook. A failed
-   call fails the workflow (`curl -f`), so a broken run shows up as red.
+3. The workflow calls the Databricks Jobs API to start the job. If Databricks
+   rejects the call (bad token, wrong job ID), `curl -f` fails the workflow and
+   it shows up as red. The workflow does not wait for the notebook to finish.
 
 Fetching 14 days every day is on purpose. openFDA sometimes publishes a batch
 late, and the overlap means a missed day is caught up on the next run. The
@@ -123,8 +124,8 @@ Docker to try out orchestration. GitHub Actions is the live scheduler.
   so the daily files never reached the table. It now lists every file under
   the bronze prefix. After the fix, silver went from 29,406 to 29,462 rows.
 - **A failed Databricks call looked fine.** The workflow stayed green even when
-  the Databricks API call failed. Adding `curl -f` makes that step fail the
-  workflow, so a broken run shows up as red.
+  the Databricks API call was rejected. Adding `curl -f` makes that step fail
+  the workflow, so a bad token or job ID shows up as red.
 - **A crash on upload.** The workflow never passed the bucket name to the
   script, so the upload failed. I passed it in, and the code now stops with a
   clear error if the bucket name is missing.
@@ -169,6 +170,11 @@ the pipeline again updates rows and never duplicates them.
   year, that year starts over.
 - **The hazard rules live in two places** (the notebook and `src/hazard.py`).
   The parity test catches drift, but a shared package would be cleaner.
+- **The workflow only starts the Databricks job.** It does not wait for the
+  notebook to finish, so a failure inside the notebook is only visible in
+  Databricks. Next step: poll the run and fail the workflow on errors.
+- **Rate limits are not retried.** The fetch retries network errors and 5xx
+  responses, but a 429 (too many requests) from openFDA fails the run.
 - **The dashboard is a static snapshot,** not a live view.
 - **The quality checks run by hand.** Next step: run them automatically after
   each load and alert on failures.
